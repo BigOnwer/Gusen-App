@@ -1,4 +1,3 @@
-// types/posts.ts
 export type PostType = 'post' | 'story';
 export type FileType = 'image' | 'video';
 export type MediaType = 'IMAGE' | 'VIDEO';
@@ -33,15 +32,15 @@ export interface PostResponse {
     name?: string;
     avatar?: string;
   };
-  _count: {
-    likes: number;
-    comments: number;
-  };
+    _count: {
+      likes: number;
+      comments: number;
+    };
 }
 
 export interface StoryResponse {
   id: string;
-  caption?: string;
+  caption?: string; // Alterado de string | undefined para string | null
   mediaUrl: string;
   mediaType: MediaType;
   userId: string;
@@ -52,8 +51,8 @@ export interface StoryResponse {
   user: {
     id: string;
     username: string;
-    name?: string;
-    avatar?: string;
+    name?: string; // Também ajustado para consistência
+    avatar?: string; // Também ajustado para consistência
   };
 }
 

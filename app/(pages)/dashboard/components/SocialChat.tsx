@@ -10,9 +10,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConversationWithDetails, MessageWithSender } from "@/types/social";
-import { User } from "@prisma/client";
 import { Send, Search, Phone, Video, MoreVertical, MessageCircle, Plus, UserPlus, Loader2, Check, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { User } from "@/types/user";
 
 interface SocialChatProps {
   currentUser: User;

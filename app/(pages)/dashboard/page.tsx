@@ -29,6 +29,7 @@ import InstagramFeed from "./components/Feed"
 import { CreatePostForm } from "./components/CreatePostForm"
 import FollowButton from "@/components/FollowButton"
 import { useFollowStatus } from "@/hooks/useFollowStatus"
+import SearchUserItem from "./components/Search"
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
@@ -41,7 +42,6 @@ export default function Dashboard() {
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
   const [searchedUsers, setSearchedUsers] = useState<User[]>([]);
   const route = useRouter()
-  const { isFollowing, setIsFollowing } = useFollowStatus(session?.user.id || '', searchedUsers.id || '');
 
   const handleCreateStory = () => {
     setShowCreateStory(true);
@@ -201,6 +201,10 @@ export default function Dashboard() {
     setUnreadMessagesCount(count);
   };
 
+  const handleNavigateToUser = (username: string) => {
+    route.push(`/user/${username}`)
+  };
+
   useEffect(() => {
     if (userSearchTimeoutRef.current) {
       clearTimeout(userSearchTimeoutRef.current);
@@ -219,7 +223,7 @@ export default function Dashboard() {
         clearTimeout(userSearchTimeoutRef.current);
       }
     };
-  }, [userSearchQuery]);
+  }, [userSearchQuery, session?.user?.id]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -254,48 +258,12 @@ export default function Dashboard() {
                   <ScrollArea className="max-h-80">
                     <div className="p-2">
                       {searchedUsers.map((user) => (
-                        <div
+                        <SearchUserItem
                           key={user.id}
-                          className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg cursor-pointer"
-                        >
-                          <div
-                            className="flex items-center space-x-3"
-                            onClick={() => {
-                              route.push(`/user/${user.username}`)
-                            }}
-                          >
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={user.avatar || undefined} />
-                              <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="flex items-center space-x-1">
-                                <p className="font-semibold text-sm">{user.username}</p>
-                                {user.isVerified && (
-                                  <div className="w-4 h-4 bg-primary rounded-full flex items-center justify-center">
-                                    <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clipRule="evenodd"
-                                      />
-                                    </svg>
-                                  </div>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground">{user.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {user.followers} seguidores
-                              </p>
-                            </div>
-                          </div>
-                          <FollowButton
-                            userId={session?.user.id || ''}
-                            targetUserId={user.id || ''} 
-                            isFollowing={isFollowing || false}
-                            onFollowChange={setIsFollowing}
-                          />
-                        </div>
+                          user={user}
+                          currentUserId={session?.user.id || ''}
+                          onNavigate={handleNavigateToUser}
+                        />
                       ))}
                     </div>
                   </ScrollArea>
@@ -320,7 +288,7 @@ export default function Dashboard() {
                 <Bell className="h-5 w-5" />
                 <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-destructive">5</Badge>
               </Button>
-                <AvatarNav user={session?.user}/>
+                {session?.user && <AvatarNav user={session.user} />}
             </div>
           </div>
         </div>
@@ -342,9 +310,9 @@ export default function Dashboard() {
               </div>
             )}
 
-            {activeTab === "messages" && (
+            {activeTab === "messages" || session?.user && (
               <SocialChat
-              currentUser={session?.user} 
+              currentUser={session.user} 
               onUnreadCountChange={handleUnreadCountChange}
               />
             )}

@@ -534,19 +534,19 @@ export default function UserProfile({userId, apiBaseUrl, user}: UserProfileProps
             <div className="flex justify-center gap-8 my-8">
               <div className="text-center">
                 <Badge variant="secondary" className="text-lg font-bold px-4 py-2">
-                  {user._count.following}
+                  {user._count?.following}
                 </Badge>
                 <p className="text-sm text-muted-foreground mt-1">Seguidores</p>
               </div>
               <div className="text-center">
                 <Badge variant="secondary" className="text-lg font-bold px-4 py-2">
-                  {user._count.followers}
+                  {user._count?.followers}
                 </Badge>
                 <p className="text-sm text-muted-foreground mt-1">Seguindo</p>
               </div>
               <div className="text-center">
                 <Badge variant="secondary" className="text-lg font-bold px-4 py-2">
-                  {user._count.posts}
+                  {user._count?.posts}
                 </Badge>
                 <p className="text-sm text-muted-foreground mt-1">Posts</p>
               </div>

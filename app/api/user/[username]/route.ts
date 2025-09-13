@@ -28,10 +28,11 @@ interface DeleteResponse {
   message: string;
 }
 
-interface RouteParams {
-  params: {
+// ATUALIZADO: Params agora é uma Promise no Next.js 15
+interface RouteContext {
+  params: Promise<{
     username: string;
-  };
+  }>;
 }
 
 // Schema de validação para atualização
@@ -46,10 +47,11 @@ type UpdateUserData = z.infer<typeof updateUserSchema>;
 // GET - Buscar usuário por username
 export async function GET(
   request: NextRequest, 
-  { params }: RouteParams
+  context: RouteContext
 ): Promise<NextResponse<UserResponse | ApiError>> {
   try {
-    const { username } = params;
+    // ATUALIZADO: Await dos params
+    const { username } = await context.params;
 
     if (!username) {
       return NextResponse.json(
@@ -99,10 +101,11 @@ export async function GET(
 // PUT - Atualizar usuário
 export async function PUT(
   request: NextRequest,
-  { params }: RouteParams
+  context: RouteContext
 ): Promise<NextResponse<UserResponse | ApiError>> {
   try {
-    const { username } = params;
+    // ATUALIZADO: Await dos params
+    const { username } = await context.params;
     const body = await request.json();
 
     if (!username) {
@@ -176,10 +179,11 @@ export async function PUT(
 // DELETE - Deletar usuário
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteParams
+  context: RouteContext
 ): Promise<NextResponse<DeleteResponse | ApiError>> {
   try {
-    const { username } = params;
+    // ATUALIZADO: Await dos params
+    const { username } = await context.params;
 
     if (!username) {
       return NextResponse.json(

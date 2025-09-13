@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { ApiResponse, StoryResponse } from "@/types/posts";
+import { ApiResponse, MediaType, StoryResponse } from "@/types/posts";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse<StoryResponse[]>>> {
@@ -35,15 +35,20 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
 
     const formattedStories: StoryResponse[] = stories.map(story => ({
       id: story.id,
-      caption: story.caption,
+      caption: story.caption ?? undefined, // Converte null para undefined
       mediaUrl: story.mediaUrl,
-      mediaType: story.mediaType,
+      mediaType: story.mediaType as MediaType,
       userId: story.userId,
       isActive: story.isActive,
+      expiresAt: story.expiresAt.toISOString(),
       createdAt: story.createdAt.toISOString(),
       updatedAt: story.updatedAt.toISOString(),
-      expiresAt: story.expiresAt.toISOString(),
-      user: story.user
+      user: {
+        id: story.user.id,
+        username: story.user.username,
+        name: story.user.name ?? undefined, // Converte null para undefined
+        avatar: story.user.avatar ?? undefined // Converte null para undefined
+      }
     }));
 
     return NextResponse.json({

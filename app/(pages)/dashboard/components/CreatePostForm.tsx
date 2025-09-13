@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation';
 interface CreatePostFormProps {
   userId: string; // ID do usuário logado
   onPostCreated?: () => void; // Callback para atualizar a timeline
-  setTab: (tab: string) => void;
+  setTab: (tab: "post" | "messages" | "home" | "explore" | "profile") => void;
 }
 
 export function CreatePostForm({ userId, onPostCreated, setTab }: CreatePostFormProps) {

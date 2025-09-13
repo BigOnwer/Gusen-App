@@ -1,7 +1,6 @@
-// app/api/stories/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { StoryResponse, ApiResponse } from '@/types/posts';
+import { StoryResponse, ApiResponse, MediaType } from '@/types/posts';
 import { authOptions } from '@/lib/auth';
 import { getServerSession } from 'next-auth';
 
@@ -45,17 +44,22 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       }
     });
 
-    const formattedStories = stories.map(story => ({
+    const formattedStories: StoryResponse[] = stories.map(story => ({
       id: story.id,
-      caption: story.caption,
+      caption: story.caption ?? undefined, // Converte null para undefined
       mediaUrl: story.mediaUrl,
-      mediaType: story.mediaType,
+      mediaType: story.mediaType as MediaType,
       userId: story.userId,
       isActive: story.isActive,
       expiresAt: story.expiresAt.toISOString(),
       createdAt: story.createdAt.toISOString(),
       updatedAt: story.updatedAt.toISOString(),
-      user: story.user
+      user: {
+        id: story.user.id,
+        username: story.user.username,
+        name: story.user.name ?? undefined, // Converte null para undefined
+        avatar: story.user.avatar ?? undefined // Converte null para undefined
+      }
     }));
 
     return NextResponse.json({

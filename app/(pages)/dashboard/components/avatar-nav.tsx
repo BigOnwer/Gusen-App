@@ -38,7 +38,7 @@ export function AvatarNav({ user }: UserDropdownProps) {
     <DropdownMenu>
       <DropdownMenuTrigger>
           <Avatar className="flex items-center justify-center">
-              <AvatarImage src={user.image as string} alt={user.name as string} className='rounded-full w-full h-full object-cover' />
+              <AvatarImage src={user.avatar as string} alt={user.name as string} className='rounded-full w-full h-full object-cover' />
             {user.name && (
               <AvatarFallback className='rounded-full w-full h-full flex items-center justify-center'>
                 {user?.name[0]}

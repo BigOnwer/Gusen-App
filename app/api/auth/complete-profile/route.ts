@@ -82,7 +82,7 @@ export async function POST(req: Request) {
             username,
             avatar: '',
             bio: '',
-            verified: true,
+            isVerified: true,
             acceptedTermsAt: new Date()
           }
         })
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
           data: {
             name,
             username,
-            verified: true,
+            isVerified: true,
             acceptedTermsAt: new Date()
           }
         })
@@ -113,7 +113,7 @@ export async function POST(req: Request) {
           email: user.email,
           name: user.name,
           username: user.username,
-          verified: user.verified,
+          verified: user.isVerified,
           avatar: '',
           bio: '',
         }

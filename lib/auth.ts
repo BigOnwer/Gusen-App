@@ -70,7 +70,7 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             name: user.name,
             username: user.username,
-            verified: user.verified,
+            isVerified: user.isVerified,
             avatar: user.avatar
           }
         } catch (error) {
@@ -88,7 +88,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.userId = user.id
         token.username = (user as any).username
-        token.verified = (user as any).verified
+        token.isVerified = (user as any).isVerified
         token.avatar = (user as any).avatar
       }
       return token
@@ -97,7 +97,7 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         (session.user as any).id = token.userId as string
         ;(session.user as any).username = token.username as string
-        ;(session.user as any).verified = token.verified as boolean
+        ;(session.user as any).isVerified = token.isVerified as boolean
         (session.user as any).avatar = token.avatar as string
       }
       return session

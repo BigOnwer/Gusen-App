@@ -1,7 +1,7 @@
 // app/api/posts/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { CreatePostRequest, PostResponse, ApiResponse } from '@/types/posts';
+import { CreatePostRequest, PostResponse, ApiResponse, MediaType } from '@/types/posts';
 import { Post } from '@prisma/client';
 
 export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<PostResponse>>> {
@@ -60,14 +60,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         success: true,
         data: {
           id: story.id,
-          caption: story.caption,
+          caption: story.caption ?? undefined,
           mediaUrl: story.mediaUrl,
-          mediaType: story.mediaType,
+          mediaType: story.mediaType as MediaType,
           userId: story.userId,
           isActive: story.isActive,
           createdAt: story.createdAt.toISOString(),
           updatedAt: story.updatedAt.toISOString(),
-          user: story.user,
+          user: {
+            name: story.user.name,
+            id: story.user.id,
+            avatar: story.user.avatar ?? undefined, // Adicione esta conversão
+            username: story.user.username,
+          },
           _count: {
             likes: 0,
             comments: 0
@@ -107,14 +112,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         success: true,
         data: {
           id: post.id,
-          caption: post.caption,
+          caption: post.caption ?? undefined,
           mediaUrl: post.mediaUrl,
-          mediaType: post.mediaType,
+          mediaType: post.mediaType as MediaType,
           userId: post.userId,
           isActive: post.isActive,
           createdAt: post.createdAt.toISOString(),
           updatedAt: post.updatedAt.toISOString(),
-          user: post.user,
+          user: {
+            name: post.user.name,
+            id: post.user.id,
+            avatar: post.user.avatar ?? undefined, // Adicione esta conversão
+            username: post.user.username,
+          },
           _count: post._count
         },
         message: 'Post criado com sucesso!'
@@ -131,7 +141,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
   }
 }
 
-export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse<Post[]>>> {
+export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse<PostResponse[]>>> {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
@@ -169,19 +179,19 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
           }
         },
         comments: {
-        take: 2,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              name: true,
-              avatar: true
+          take: 2,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                avatar: true
+              }
             }
           }
-        }
-      },
+        },
       },
       orderBy: {
         createdAt: 'desc'
@@ -190,17 +200,34 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       take: limit
     });
 
-    const formattedPosts = posts.map(post => ({
+    const formattedPosts: PostResponse[] = posts.map(post => ({
       id: post.id,
-      caption: post.caption,
+      caption: post.caption ?? undefined, // Converte null para undefined
       mediaUrl: post.mediaUrl,
-      mediaType: post.mediaType,
+      mediaType: post.mediaType as MediaType,
       userId: post.userId,
       isActive: post.isActive,
       createdAt: post.createdAt.toISOString(),
       updatedAt: post.updatedAt.toISOString(),
-      user: post.user,
-      _count: post._count
+      user: {
+        id: post.user.id,
+        username: post.user.username,
+        name: post.user.name ?? undefined, // Também converta name se necessário
+        avatar: post.user.avatar ?? undefined // Também converta avatar se necessário
+      },
+      _count: post._count,
+      comments: post.comments?.map(comment => ({
+        id: comment.id,
+        content: comment.text || '',
+        userId: comment.userId,
+        createdAt: comment.createdAt.toISOString(),
+        user: {
+          id: comment.user.id,
+          username: comment.user.username,
+          name: comment.user.name ?? undefined,
+          avatar: comment.user.avatar ?? undefined
+        }
+      }))
     }));
 
     return NextResponse.json({

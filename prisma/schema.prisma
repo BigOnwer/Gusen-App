@@ -14,7 +14,7 @@ model User {
   avatar            String?
   bio               String?
   username          String   @unique
-  verified          Boolean  @default(false)
+  isVerified          Boolean  @default(false)
   createdAt         DateTime @default(now())
   acceptedTermsAt   DateTime @default(now())
   updatedAt         DateTime @updatedAt

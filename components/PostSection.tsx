@@ -601,8 +601,8 @@ const PostSection: React.FC<PostSectionProps> = ({
                       {session?.user && (
                         <div className="flex items-center space-x-3 pt-2 border-t border-gray-200">
                           <Avatar className="h-8 w-8">
-                            {session.user.image ? (
-                              <AvatarImage src={session.user.image} />
+                            {session.user.avatar ? (
+                              <AvatarImage src={session.user.avatar} />
                             ) : (
                               <AvatarFallback>
                                 {session.user.username?.slice(0, 2).toUpperCase() || 'EU'}

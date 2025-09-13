@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth'; // ajuste o caminho conforme sua configuração
 import { prisma } from '@/lib/prisma';
 import UserProfile from '@/components/UserProfile';
 import { User } from '@/types/user';
@@ -35,7 +37,7 @@ export async function generateMetadata({ params }: UserPageProps): Promise<Metad
 }
 
 // Buscar dados do usuário no servidor
-async function getUserData(username: string): Promise<User | null> {
+async function getUserData(username: string, currentUserId?: string): Promise<User | null> {
   try {
     const user = await prisma.user.findUnique({
       where: { username: username.toLowerCase() },
@@ -43,11 +45,58 @@ async function getUserData(username: string): Promise<User | null> {
         id: true,
         username: true,
         name: true,
+        email: true,
+        isOnline: true,
+        lastSeen: true,
+        followers: {
+          select: {
+            followerId: true,
+            follower: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                avatar: true,
+              }
+            }
+          }
+        },
+        isVerified: true,
         bio: true,
         avatar: true,
         createdAt: true,
         updatedAt: true,
-        posts: true,
+        posts: {
+          orderBy: {
+            createdAt: 'desc'
+          },
+          select: {
+            id: true,
+            caption: true,
+            mediaUrl: true,
+            mediaType: true,
+            createdAt: true,
+            _count: {
+              select: {
+                likes: true,
+                comments: true,
+              }
+            }
+          }
+        },
+        following: {
+          select: {
+            followingId: true,
+            following: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                avatar: true,
+              }
+            }
+          }
+        },
         _count: {
           select: {
             followers: true,
@@ -62,11 +111,22 @@ async function getUserData(username: string): Promise<User | null> {
       return null;
     }
 
+    // Verificar se o usuário atual está seguindo este perfil
+    const isFollowing = currentUserId 
+      ? user.followers.some(follower => follower.followerId === currentUserId)
+      : false;
+
     // Converter datas para string para evitar problemas de serialização
     return {
       ...user,
       createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString()
+      updatedAt: user.updatedAt.toISOString(),
+      lastSeen: user.lastSeen,
+      isFollowing, // ✅ Adicionar a propriedade isFollowing
+      posts: user.posts.map(post => ({
+        ...post,
+        createdAt: post.createdAt.toISOString()
+      }))
     };
   } catch (error) {
     console.error('Erro ao buscar usuário:', error);
@@ -78,7 +138,11 @@ export default async function UserPage({ params }: UserPageProps) {
   const { username } = await params; // ✅ Aguarda params
   
   try {
-    const user = await getUserData(username);
+    // Buscar sessão atual para verificar se está seguindo
+    const session = await getServerSession(authOptions);
+    const currentUserId = session?.user?.id;
+    
+    const user = await getUserData(username, currentUserId);
     
     if (!user) {
       notFound();

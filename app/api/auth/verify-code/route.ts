@@ -59,7 +59,7 @@ export async function POST(req: Request) {
         email: true,
         name: true,
         username: true,
-        verified: true
+        isVerified: true
       }
     })
 
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
           email: existingUser.email,
           name: existingUser.name,
           username: existingUser.username,
-          verified: existingUser.verified
+          verified: existingUser.isVerified
         }
       })
     } else {
