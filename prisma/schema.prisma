@@ -8,37 +8,30 @@ datasource db {
 }
 
 model User {
-  id                String   @id @default(cuid())
-  email             String   @unique
+  id                String             @id @default(cuid())
+  email             String             @unique
   name              String
   avatar            String?
   bio               String?
-  username          String   @unique
-  isVerified          Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  acceptedTermsAt   DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  //message
-  isOnline    Boolean  @default(false)
-  lastSeen    DateTime @default(now())
-  
+  username          String             @unique
+  createdAt         DateTime           @default(now())
+  acceptedTermsAt   DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  isOnline          Boolean            @default(false)
+  lastSeen          DateTime           @default(now())
+  isVerified        Boolean            @default(false)
+  comments          Comment[]
+  conversations     ConversationUser[]
+  followers         Follow[]           @relation("UserFollowers")
+  following         Follow[]           @relation("UserFollowing")
+  likes             Like[]
+  messagesSent      MessageRead[]
+  receivedMessages  Message[]          @relation("MessageReceiver")
+  sentMessages      Message[]          @relation("MessageSender")
+  posts             Post[]
+  stories           Story[]
   verificationCodes VerificationCode[]
-  posts    Post[]
-  likes    Like[]
-  comments Comment[]
-  stories  Story[]
-  followers Follow[] @relation("UserFollowers")
-  following Follow[] @relation("UserFollowing")
 
-  // Mensagens
-  sentMessages     Message[] @relation("MessageSender")
-  receivedMessages Message[] @relation("MessageReceiver")
-  messagesSent MessageRead[]
-  
-  // Conversas
-  conversations ConversationUser[]
-  
   @@map("users")
 }
 
@@ -50,56 +43,51 @@ model VerificationCode {
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
-  
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("verification_codes")
 }
 
 model Conversation {
-  id        String   @id @default(cuid())
+  id        String             @id @default(cuid())
   name      String?
-  isGroup   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  users    ConversationUser[]
-  messages Message[]
+  isGroup   Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  users     ConversationUser[]
+  messages  Message[]
 
   @@map("conversations")
 }
 
 model ConversationUser {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   userId         String
   conversationId String
-  joinedAt       DateTime @default(now())
-  isAdmin        Boolean  @default(false)
-
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  joinedAt       DateTime     @default(now())
+  isAdmin        Boolean      @default(false)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, conversationId])
   @@map("conversation_users")
 }
 
 model Message {
-  id             String    @id @default(cuid())
+  id             String        @id @default(cuid())
   content        String
   imageUrl       String?
   senderId       String
   receiverId     String?
   conversationId String?
-  isRead         Boolean   @default(false)
+  isRead         Boolean       @default(false)
   readAt         DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  readBy       MessageRead[]
-
-  sender       User          @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver     User?         @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  readBy         MessageRead[]
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  receiver       User?         @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender         User          @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@map("messages")
 }
@@ -109,9 +97,8 @@ model MessageRead {
   messageId String
   userId    String
   readAt    DateTime @default(now())
-
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId])
   @@map("message_reads")
@@ -122,46 +109,37 @@ model Follow {
   followerId  String
   followingId String
   createdAt   DateTime @default(now())
-
-  follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
-  following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
   @@map("follows")
 }
 
 model Post {
-  id        String @id @default(cuid())
+  id        String    @id @default(cuid())
   caption   String?
   mediaUrl  String
   mediaType String
-  isActive  Boolean @default(true)
-  
-  // Relacionamentos
-  userId   String
-  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  likes    Like[]
-  comments Comment[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isActive  Boolean   @default(true)
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  comments  Comment[]
+  likes     Like[]
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("posts")
 }
 
 model Like {
-  id String @id @default(cuid())
-  
-  // Relacionamentos
-  userId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  postId String
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
   createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Constraint para evitar likes duplicados
   @@unique([userId, postId])
   @@map("likes")
 }
@@ -173,188 +151,23 @@ model Comment {
   postId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // Relacionamentos
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }
 
 model Story {
-  id        String @id @default(cuid())
+  id        String   @id @default(cuid())
   caption   String?
   mediaUrl  String
   mediaType String
-  isActive  Boolean @default(true)
+  isActive  Boolean  @default(true)
   expiresAt DateTime
-  
-  // Relacionamentos
-  userId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("stories")
-}
-
-/*
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model User {
-  id          String   @id @default(cuid())
-  username    String   @unique
-  email       String   @unique
-  displayName String?
-  bio         String?
-  avatar      String?
-  coverPhoto  String?
-  isVerified  Boolean  @default(false)
-  isOnline    Boolean  @default(false)
-  lastSeen    DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relacionamentos de seguir
-  followers Follow[] @relation("UserFollowers")
-  following Follow[] @relation("UserFollowing")
-
-  // Posts e Stories
-  posts   Post[]
-  stories Story[]
-  
-  // Mensagens
-  sentMessages     Message[] @relation("MessageSender")
-  receivedMessages Message[] @relation("MessageReceiver")
-  
-  // Conversas
-  conversations ConversationUser[]
-  
-  // Likes e Comentários
-  likes    Like[]
-  comments Comment[]
-
-  @@map("users")
-}
-
-model Follow {
-  id          String   @id @default(cuid())
-  followerId  String
-  followingId String
-  createdAt   DateTime @default(now())
-
-  follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
-  following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
-
-  @@unique([followerId, followingId])
-  @@map("follows")
-}
-
-model Post {
-  id        String   @id @default(cuid())
-  content   String
-  imageUrl  String?
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  likes    Like[]
-  comments Comment[]
-
-  @@map("posts")
-}
-
-model Story {
-  id        String   @id @default(cuid())
-  content   String?
-  imageUrl  String?
-  videoUrl  String?
-  authorId  String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  @@map("stories")
-}
-
-model Like {
-  id     String @id @default(cuid())
-  userId String
-  postId String
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, postId])
-  @@map("likes")
-}
-
-model Comment {
-  id        String   @id @default(cuid())
-  content   String
   userId    String
-  postId    String
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@map("comments")
-}
-
-model Conversation {
-  id        String   @id @default(cuid())
-  name      String?
-  isGroup   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  users    ConversationUser[]
-  messages Message[]
-
-  @@map("conversations")
+  @@map("stories")
 }
-
-model ConversationUser {
-  id             String   @id @default(cuid())
-  userId         String
-  conversationId String
-  joinedAt       DateTime @default(now())
-  isAdmin        Boolean  @default(false)
-
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, conversationId])
-  @@map("conversation_users")
-}
-
-model Message {
-  id             String    @id @default(cuid())
-  content        String
-  imageUrl       String?
-  senderId       String
-  receiverId     String?
-  conversationId String?
-  isRead         Boolean   @default(false)
-  readAt         DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  sender       User          @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver     User?         @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@map("messages")
-}
-*/
