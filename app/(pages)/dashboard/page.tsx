@@ -310,9 +310,9 @@ export default function Dashboard() {
               </div>
             )}
 
-            {activeTab === "messages" || session?.user && (
+            {activeTab === "messages" && (
               <SocialChat
-              currentUser={session.user} 
+              currentUser={session?.user} 
               onUnreadCountChange={handleUnreadCountChange}
               />
             )}
